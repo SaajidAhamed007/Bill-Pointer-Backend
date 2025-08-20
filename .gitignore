@@ -1,0 +1,57 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pdb
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+*.log
+
+# VS Code
+.vscode/
+
+# SQLite database files
+*.db
+*.sqlite3
+
+# Environment
+.env
+.env.*
+venv/
+ENV/
+env/
+.venv/
+.Python
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# Pytest cache
+.pytest_cache/
+
+# mypy
+.mypy_cache/
+
+# Coverage reports
+htmlcov/
+.coverage
+.tox/
+
+# WatermelonDB (if syncing files)
+watermelon-sync/
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# Misc
+*.bak
+*.swp
+*.swo
