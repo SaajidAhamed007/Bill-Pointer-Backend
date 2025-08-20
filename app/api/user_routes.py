@@ -72,6 +72,7 @@ def signup_verify_otp(payload: dict = Body(...), db: Session = Depends(get_db)):
 
     user_data = payload
     new_user = User(
+        id=user_data.get("id", None),  # Optional ID for existing users
         name=user_data["name"],
         age=user_data["age"],
         gender=user_data["gender"],
@@ -82,7 +83,7 @@ def signup_verify_otp(payload: dict = Body(...), db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_user)
 
-    token = create_access_token({"sub": new_user.mobile_no})
+    token = create_access_token({"sub": mobile_no, "id": id})
 
     return {
         "message": "Signup successful",
