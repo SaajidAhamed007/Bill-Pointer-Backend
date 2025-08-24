@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, Body, Depends, Request
 from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.orm import sessionmaker, declarative_base, Session
 from app.core.jwt import create_access_token, decode_access_token
+from app.db.sqlite import get_db
 import random
 from app.core.auth import jwt_required
 
@@ -23,18 +24,11 @@ Base.metadata.create_all(bind=engine)
 
 router = APIRouter()
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
 otp_store = {}  # {mobile_no: otp}
 
 
 def generate_and_store_otp(mobile_no: str) -> str:
-    otp = str(random.randint(100000, 999999))
+    otp = str(random.randint(1000, 9999))
     otp_store[mobile_no] = otp
     print(f"✅ OTP for {mobile_no}: {otp}")
     return otp

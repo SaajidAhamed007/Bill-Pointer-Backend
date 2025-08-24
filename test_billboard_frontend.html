@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Billboard Detection - Image Upload Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 600px; margin: 0 auto; }
+        button { padding: 10px 20px; margin: 10px 0; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .result { margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 5px; white-space: pre-wrap; }
+        .error { background: #f8d7da; color: #721c24; }
+        .success { background: #d4edda; color: #155724; }
+        input[type="file"] { margin: 10px 0; }
+        .form-group { margin: 15px 0; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input[type="number"], input[type="text"] { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📱 Billboard Detection Test</h1>
+        <p>Upload an image and test the billboard detection API</p>
+        
+        <form id="detectionForm">
+            <div class="form-group">
+                <label for="imageInput">Select Image:</label>
+                <input type="file" id="imageInput" accept="image/*" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="userId">User ID:</label>
+                <input type="number" id="userId" value="1" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="latitude">Latitude:</label>
+                <input type="number" id="latitude" value="28.6139" step="any" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="longitude">Longitude:</label>
+                <input type="number" id="longitude" value="77.2090" step="any" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="dimension">Dimension:</label>
+                <input type="text" id="dimension" value="10x5" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="qualityScore">Quality Score (0.0-1.0):</label>
+                <input type="number" id="qualityScore" value="0.8" step="0.1" min="0" max="1" required>
+            </div>
+            
+            <button type="submit">🚀 Detect Billboard</button>
+        </form>
+        
+        <div id="result" class="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        document.getElementById('detectionForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const fileInput = document.getElementById('imageInput');
+            const resultDiv = document.getElementById('result');
+            
+            if (!fileInput.files[0]) {
+                showResult('❌ Please select an image file', 'error');
+                return;
+            }
+            
+            try {
+                showResult('🔄 Converting image to base64...', '');
+                
+                // Convert image to base64
+                const imageBase64 = await fileToBase64(fileInput.files[0]);
+                
+                showResult('🔄 Sending request to API...', '');
+                
+                // Prepare request data
+                const requestData = {
+                    user_id: parseInt(document.getElementById('userId').value),
+                    latitude: parseFloat(document.getElementById('latitude').value),
+                    longitude: parseFloat(document.getElementById('longitude').value),
+                    dimension: document.getElementById('dimension').value,
+                    quality_score: parseFloat(document.getElementById('qualityScore').value),
+                    image_bytes: imageBase64
+                };
+                
+                console.log('📤 Sending request:', {
+                    ...requestData,
+                    image_bytes: `${imageBase64.substring(0, 50)}... (${imageBase64.length} chars)`
+                });
+                
+                // Send POST request
+                const response = await fetch('http://127.0.0.1:8000/api/billboards/detections/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showResult(`✅ SUCCESS! Billboard Detection Completed
+                    
+🆔 Detection ID: ${result.id}
+📍 Status: ${result.status}
+💬 Message: ${result.message}
+
+📊 Billboard Content:
+📝 Extracted Text: ${result.billboard_content?.extracted_text || 'None'}
+🛡️ Content Appropriate: ${result.billboard_content?.content_appropriate}
+⚠️ Harmful Content: ${result.billboard_content?.harmful_content_detected}
+🔢 Risk Score: ${result.billboard_content?.risk_score || 0}
+
+📍 Location: ${result.billboard_data?.latitude}, ${result.billboard_data?.longitude}
+📏 Dimensions: ${result.billboard_data?.dimensions}`, 'success');
+                } else {
+                    showResult(`❌ ERROR: ${response.status}
+                    
+${JSON.stringify(result, null, 2)}`, 'error');
+                }
+                
+            } catch (error) {
+                showResult(`❌ ERROR: ${error.message}
+                
+💡 Make sure:
+1. Server is running on http://127.0.0.1:8000
+2. Image file is valid
+3. All form fields are filled correctly`, 'error');
+            }
+        });
+        
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => {
+                    // Remove the data:image/jpeg;base64, prefix
+                    const base64 = reader.result.split(',')[1];
+                    resolve(base64);
+                };
+                reader.onerror = error => reject(error);
+            });
+        }
+        
+        function showResult(message, type) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.textContent = message;
+            resultDiv.className = `result ${type}`;
+            resultDiv.style.display = 'block';
+            resultDiv.scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>

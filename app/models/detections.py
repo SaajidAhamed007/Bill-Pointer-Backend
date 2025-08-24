@@ -1,8 +1,6 @@
 from sqlalchemy import Column, Integer, String, Float, Enum as SqlEnum
-from sqlalchemy.ext.declarative import declarative_base
+from app.db.sqlite import Base
 import enum
-
-Base = declarative_base()
 
 class DetectionStatus(enum.Enum):
     pending = "pending"

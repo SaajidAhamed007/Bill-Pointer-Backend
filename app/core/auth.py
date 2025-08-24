@@ -1,9 +1,10 @@
 from fastapi import HTTPException, status, Request, Depends
+from sqlalchemy.orm import Session
 from app.core.jwt import decode_access_token
 from app.db.sqlite import get_db
 from app.models.user import User
 
-def jwt_required(request: Request, db=Depends(get_db)):
+def jwt_required(request: Request, db: Session = Depends(get_db)):
     auth_header = request.headers.get("Authorization")
     if not auth_header or not auth_header.startswith("Bearer "):
         raise HTTPException(
